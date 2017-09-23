@@ -26,7 +26,7 @@ class Dokku
       Net::SSH.start(server_address, "root") do |ssh|
         existing_apps = ssh.exec!("dokku apps").to_s.lines.map(&:chomp)
         if existing_apps.include?(name)
-          warning("app already existing, skipping")
+          warning("app already exists, skipping")
         else
           exit
           puts ssh.exec!("dokku apps:create #{name}")

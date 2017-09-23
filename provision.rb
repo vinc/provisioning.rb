@@ -1,4 +1,5 @@
 require "droplet_kit"
+require "git"
 require "json"
 require "net/ssh"
 require "pry"
@@ -38,7 +39,7 @@ def get_ssh_key(fingerprint)
   agent = Net::SSH::Authentication::Agent.connect
   agent.identities.find do |identity|
     identity.fingerprint == fingerprint
-  end || error("could not find SSH key in authentication agent, run `ssh-add`")
+  end || error("could not get key from the authentication agent, run `ssh-add`")
 end
 
 def run(args)
@@ -106,12 +107,26 @@ def run(args)
   if config["providers"]["platform"] == "dokku"
     dokku = Dokku.new(config["dokku"])
     dokku.setup(server_address || server_hostname)
+    success("Run `gem install dokku-cli` to get dokku client on your machine")
     puts
 
     dokku.create_app(config["app"])
     puts
 
-    success("Run `gem install dokku-cli` to get dokku client on your machine")
+    info("Adding dokku to git remotes")
+    begin
+      git = Git.open(".")
+    rescue ArgumentError
+      warning("not a git repository, skipping")
+    else
+      if git.remotes.map(&:name).include?("dokku")
+        warning("remote already exists, skipping")
+      else
+        git.add_remote("dokku", "dokku@#{server_hostname}:#{app_name}")
+      end
+      success("Run `git push dokku master` to deploy your code")
+      puts
+    end
   end
 end
 
