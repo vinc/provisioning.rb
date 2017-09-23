@@ -1,0 +1,29 @@
+{
+  "domain": "server.net",
+  "providers": {
+    "hosting": "digitalocean",
+    "dns": "digitalocean",
+    "platform": "dokku"
+  },
+  "app": {
+    "name": "example",
+    "domains": ["example.com", "www.example.com"],
+    "services": ["postgres", "redis"]
+  },
+  "digitalocean": {
+    "token": "fakeb92c90e5ccd592a186715047596d8c21ffc376bdffff347f47459e70fake",
+    "droplet": {
+      "region": "fra1",
+      "image": "ubuntu-16-04-x64",
+      "size": "1gb"
+    }
+  },
+  "dokku": {
+    "version": "v0.10.4"
+  },
+  "ssh": {
+    "key": {
+      "fingerprint": "fa:ke:df:4b:51:1a:f6:00:f3:e1:57:59:14:a4:fa:ke"
+    }
+  }
+}
