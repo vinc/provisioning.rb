@@ -9,7 +9,7 @@ module Provisioning
       @servers = []
     end
 
-    def setup(address:, hostname:)
+    def setup(address:, domain:)
       @servers << address
       version = @config["version"]
       Console.info("Installing dokku #{version} on '#{address}'")
@@ -21,7 +21,9 @@ module Provisioning
           puts ssh.exec!("DOKKU_TAG=#{version} bash bootstrap.sh")
           puts ssh.exec!("service dokku-installer stop")
           puts ssh.exec!("systemctl disable dokku-installer")
-          puts ssh.exec!("echo -n #{hostname} > /home/dokku/VHOST")
+          puts ssh.exec!("cat .ssh/authorized_keys | sshcommand acl-add dokku admin")
+          puts ssh.exec!("echo -n #{domain} > /home/dokku/VHOST")
+          puts ssh.exec!("echo -n #{domain} > /home/dokku/HOSTNAME")
         end
       end
     end
