@@ -1,8 +1,8 @@
+require "droplet_kit"
 require "json"
 require "net/ssh"
 require "pry"
 require "rainbow"
-require "droplet_kit"
 
 require "./digitalocean"
 require "./dokku"
@@ -55,16 +55,13 @@ def run(args)
   ssh_key = get_ssh_key(ssh_key_fingerprint)
   puts
 
-  if config["dokku"]
-    platform = "dokku"
-  else
-    error("could not find platform in config")
-  end
-
-  server_hostname = [platform, config["domain"]].join(".")
+  app_name = config["app"]["name"]
+  domain = config["domain"]
+  platform = config["providers"]["platform"]
+  server_hostname = [platform, domain].join(".")
   server_address = nil
 
-  if config["digitalocean"]
+  if config["providers"]["hosting"] == "digitalocean"
     digitalocean = DigitalOcean.new(config["digitalocean"])
 
     digitalocean.upload_ssh_key(ssh_key)
@@ -78,9 +75,40 @@ def run(args)
     puts
   end
 
-  if config["dokku"]
+  if config["providers"]["dns"] == "digitalocean"
+    digitalocean = DigitalOcean.new(config["digitalocean"])
+
+    digitalocean.create_domain(domain, server_address)
+    success("Configue '#{domain}' with the following DNS servers:")
+    digitalocean.get_domain_name_servers(domain).each do |server|
+      success("  - #{server}")
+    end
+    puts
+
+    digitalocean.create_domain_record(
+      domain: domain,
+      type: "A",
+      name: platform,
+      data: server_address
+    )
+    digitalocean.create_domain_record(
+      domain: domain,
+      type: "CNAME",
+      name: app_name,
+      data: "#{server_hostname}."
+    )
+    config["app"]["domains"].each do |app_domain|
+      success("Configue '#{app_domain}' to point to '#{server_hostname}'")
+    end
+    puts
+  end
+
+  if config["providers"]["platform"] == "dokku"
     dokku = Dokku.new(config["dokku"])
-    dokku.install(server_address || server_hostname)
+    dokku.setup(server_address || server_hostname)
+    puts
+
+    dokku.create_app(config["app"])
     puts
 
     success("Run `gem install dokku-cli` to get dokku client on your machine")

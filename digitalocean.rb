@@ -46,4 +46,41 @@ class DigitalOcean
   ensure
     restore_verbose
   end
+
+  def create_domain(name, address)
+    info("Creating domain '#{name}'")
+
+    disable_verbose
+    if @client.domains.all.map(&:name).include?(name)
+      warning("domain already exists, skipping")
+    else
+      domain = DropletKit::Domain.new(name: name, ip_address: address)
+      @client.domains.create(domain)
+    end
+  ensure
+    restore_verbose
+  end
+
+  def create_domain_record(domain:, type:, name:, data:)
+    info("Creating domain record #{type} '#{name}.#{domain}' to '#{data}'")
+
+    disable_verbose
+    if @client.domain_records.all(for_domain: domain).map(&:name).include?(name)
+      warning("record already exists, skipping")
+    else
+      record = DropletKit::DomainRecord.new(type: type, name: name, data: data)
+      @client.domain_records.create(record, for_domain: domain)
+    end
+  ensure
+    restore_verbose
+  end
+
+  def get_domain_name_servers(domain)
+    disable_verbose
+    @client.domain_records.all(for_domain: domain).
+      select { |r| r.type == "NS" }.
+      map(&:data)
+  ensure
+    restore_verbose
+  end
 end
