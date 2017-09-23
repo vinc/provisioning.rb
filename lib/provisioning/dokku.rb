@@ -17,7 +17,6 @@ module Provisioning
         if ssh.exec!("which dokku").present?
           Console.warning("dokku already installed, skipping")
         else
-          exit
           puts ssh.exec!("wget https://raw.githubusercontent.com/dokku/dokku/#{version}/bootstrap.sh")
           puts ssh.exec!("sudo DOKKU_TAG=#{version} bash bootstrap.sh")
         end
@@ -33,7 +32,6 @@ module Provisioning
           if existing_apps.include?(name)
             Console.warning("app already exists, skipping")
           else
-            exit
             puts ssh.exec!("dokku apps:create #{name}")
             config["services"].each do |service|
               case service

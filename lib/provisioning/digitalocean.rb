@@ -20,7 +20,6 @@ module Provisioning
           name: "provisioning key",
           public_key: ssh_key.to_s
         )
-        exit
         @client.ssh_keys.create(key)
       end
       restore_verbose
@@ -44,8 +43,6 @@ module Provisioning
         size: @config["droplet"]["size"],
         ssh_keys: [ssh_key_fingerprint]
       )
-
-      exit
       client.droplets.create(droplet)
       droplet
     ensure
