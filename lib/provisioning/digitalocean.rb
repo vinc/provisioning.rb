@@ -43,7 +43,7 @@ module Provisioning
         size: @config["droplet"]["size"],
         ssh_keys: [ssh_key_fingerprint]
       )
-      client.droplets.create(droplet)
+      @client.droplets.create(droplet)
       droplet
     ensure
       restore_verbose
