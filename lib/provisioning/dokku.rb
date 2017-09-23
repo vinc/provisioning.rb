@@ -33,17 +33,18 @@ module Provisioning
             Console.warning("app already exists, skipping")
           else
             puts ssh.exec!("dokku apps:create #{name}")
+
             config["services"].each do |service|
               case service
               when "mongo", "postgres", "redis"
-                # TODO: install plugins for mongo and redis
+                puts ssh.exec!("dokku plugin:install https://github.com/dokku/dokku-#{service}.git #{service}")
                 puts ssh.exec!("dokku #{service}:create #{name}-#{service}")
                 puts ssh.exec!("dokku #{service}:link #{name}-#{service} #{name}")
               end
             end
-            config["domains"].each do |domains|
-              puts ssh.exec!("dokku domains:add #{domain}")
-            end
+
+            domains = config["domains"].join(" ")
+            puts ssh.exec!("dokku domains:add #{name} #{domains}")
           end
         end
       end
