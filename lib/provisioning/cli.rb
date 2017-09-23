@@ -79,7 +79,7 @@ module Provisioning
 
       if config["providers"]["platform"] == "dokku"
         dokku = Dokku.new(config["dokku"])
-        dokku.setup(server_address || server_hostname)
+        dokku.setup(address: server_address, hostname: domain)
         Console.success("Run `gem install dokku-cli` to get dokku client on your machine")
         puts
 
