@@ -53,7 +53,7 @@ Provisioning manifest json file:
 
 ```json
 {
-  "manifest" {
+  "manifest": {
     "domain": "server.net",
     "providers": {
       "hosting": "digitalocean",
