@@ -23,7 +23,7 @@ Usage
 
 Run the provisioning script:
 
-    $ provision config.json
+    $ provision manifest.json
     Getting SSH key from authentication agent
 
     Uploading SSH key to DigitalOcean
@@ -49,35 +49,37 @@ Run the provisioning script:
     Adding dokku to git remotes
     Run `git push dokku master` to deploy your code
 
-Configuration file:
+Provisioning manifest json file:
 
 ```json
 {
-  "domain": "server.net",
-  "providers": {
-    "hosting": "digitalocean",
-    "dns": "digitalocean",
-    "platform": "dokku"
-  },
-  "app": {
-    "name": "example",
-    "domains": ["example.com", "www.example.com"],
-    "services": ["postgres", "redis"]
-  },
-  "digitalocean": {
-    "token": "fakeb92c90e5ccd592a186715047596d8c21ffc376bdffff347f47459e70fake",
-    "droplet": {
-      "region": "fra1",
-      "image": "ubuntu-16-04-x64",
-      "size": "1gb"
-    }
-  },
-  "dokku": {
-    "version": "v0.10.4"
-  },
-  "ssh": {
-    "key": {
-      "fingerprint": "fa:ke:df:4b:51:1a:f6:00:f3:e1:57:59:14:a4:fa:ke"
+  "manifest" {
+    "domain": "server.net",
+    "providers": {
+      "hosting": "digitalocean",
+      "dns": "digitalocean",
+      "platform": "dokku"
+    },
+    "app": {
+      "name": "example",
+      "domains": ["example.com", "www.example.com"],
+      "services": ["postgres", "redis"]
+    },
+    "digitalocean": {
+      "token": "fakeb92c90e5ccd592a186715047596d8c21ffc376bdffff347f47459e70fake",
+      "droplet": {
+        "region": "fra1",
+        "image": "ubuntu-16-04-x64",
+        "size": "1gb"
+      }
+    },
+    "dokku": {
+      "version": "v0.10.4"
+    },
+    "ssh": {
+      "key": {
+        "fingerprint": "fa:ke:df:4b:51:1a:f6:00:f3:e1:57:59:14:a4:fa:ke"
+      }
     }
   }
 }

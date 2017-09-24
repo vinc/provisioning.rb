@@ -16,27 +16,29 @@ module Provisioning
     end
 
     def self.start(args, env)
-      config_file = args.shift || "provisioning.json"
+      json_file = args.shift || "manifest.json"
 
       begin
-        config = JSON.parse(File.open(config_file).read)
+        json = JSON.parse(File.open(json_file).read)
       rescue Errno::ENOENT, JSON::ParserError
-        Console.error("could not read json provisioning file '#{config_file}'")
+        Console.error("could not read provisioning manifest file '#{json_file}'")
       end
 
-      ssh_key_fingerprint = config["ssh"]["key"]["fingerprint"]
+      manifest = json["manifest"]
+
+      ssh_key_fingerprint = manifest["ssh"]["key"]["fingerprint"]
 
       ssh_key = get_ssh_key(ssh_key_fingerprint)
       puts
 
-      app_name = config["app"]["name"]
-      domain = config["domain"]
-      platform = config["providers"]["platform"]
+      app_name = manifest["app"]["name"]
+      domain = manifest["domain"]
+      platform = manifest["providers"]["platform"]
       server_hostname = [platform, domain].join(".")
       server_address = nil
 
-      if config["providers"]["hosting"] == "digitalocean"
-        digitalocean = DigitalOcean.new(config["digitalocean"])
+      if manifest["providers"]["hosting"] == "digitalocean"
+        digitalocean = DigitalOcean.new(manifest["digitalocean"])
 
         digitalocean.upload_ssh_key(ssh_key)
         puts
@@ -49,8 +51,8 @@ module Provisioning
         puts
       end
 
-      if config["providers"]["dns"] == "digitalocean"
-        digitalocean = DigitalOcean.new(config["digitalocean"])
+      if manifest["providers"]["dns"] == "digitalocean"
+        digitalocean = DigitalOcean.new(manifest["digitalocean"])
 
         digitalocean.create_domain(domain, server_address)
         Console.success("Configue '#{domain}' with the following DNS servers:")
@@ -71,19 +73,19 @@ module Provisioning
           name: app_name,
           data: "#{server_hostname}."
         )
-        config["app"]["domains"].each do |app_domain|
+        manifest["app"]["domains"].each do |app_domain|
           Console.success("Configue '#{app_domain}' to point to '#{server_hostname}'")
         end
         puts
       end
 
-      if config["providers"]["platform"] == "dokku"
-        dokku = Dokku.new(config["dokku"])
+      if manifest["providers"]["platform"] == "dokku"
+        dokku = Dokku.new(manifest["dokku"])
         dokku.setup(address: server_address, domain: domain)
         Console.success("Run `gem install dokku-cli` to get dokku client on your machine")
         puts
 
-        dokku.create_app(config["app"])
+        dokku.create_app(manifest["app"])
         puts
 
         Console.info("Adding dokku to git remotes")
