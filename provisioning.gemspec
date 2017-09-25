@@ -14,12 +14,14 @@ Gem::Specification.new do |s|
     "lib/provisioning.rb",
     "lib/provisioning/cli.rb",
     "lib/provisioning/console.rb",
-    "lib/provisioning/digitalocean.rb",
-    "lib/provisioning/dokku.rb",
+    "lib/provisioning/dns/digitalocean.rb",
+    "lib/provisioning/hosting/digitalocean.rb",
+    "lib/provisioning/platform/dokku.rb"
   ]
   s.executables << "provision"
-  s.add_runtime_dependency("git",         "~> 1.3", ">= 1.3.0")
-  s.add_runtime_dependency("rainbow",     "~> 2.2", ">= 2.2.0")
-  s.add_runtime_dependency("droplet_kit", "~> 2.1", ">= 2.1.0")
-  s.add_runtime_dependency("net-ssh",     "~> 4.1", ">= 4.1.0")
+  s.add_runtime_dependency("fog-digitalocean", "~> 0.3", ">= 0.3.0")
+  s.add_runtime_dependency("git",              "~> 1.3", ">= 1.3.0")
+  s.add_runtime_dependency("rainbow",          "~> 2.2", ">= 2.2.0")
+  s.add_runtime_dependency("droplet_kit",      "~> 2.1", ">= 2.1.0")
+  s.add_runtime_dependency("net-ssh",          "~> 4.1", ">= 4.1.0")
 end

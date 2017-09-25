@@ -54,31 +54,35 @@ Provisioning manifest json file:
 ```json
 {
   "manifest": {
-    "domain": "server.net",
-    "providers": {
-      "hosting": "digitalocean",
-      "dns": "digitalocean",
-      "platform": "dokku"
-    },
     "app": {
       "name": "example",
       "domains": ["example.com", "www.example.com"],
       "services": ["postgres", "redis"]
     },
-    "digitalocean": {
-      "token": "fakeb92c90e5ccd592a186715047596d8c21ffc376bdffff347f47459e70fake",
-      "droplet": {
-        "region": "fra1",
+    "platform": {
+      "provider": "dokku",
+      "version": "v0.10.4"
+    },
+    "hosting": {
+      "provider": "digitalocean",
+      "server": {
+        "region": "sfo1",
         "image": "ubuntu-16-04-x64",
         "size": "1gb"
       }
     },
-    "dokku": {
-      "version": "v0.10.4"
+    "dns": {
+      "provider": "digitalocean",
+      "domain": "sfo1.example.net"
     },
     "ssh": {
       "key": {
-        "fingerprint": "fa:ke:df:4b:51:1a:f6:00:f3:e1:57:59:14:a4:fa:ke"
+        "fingerprint": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+      }
+    },
+    "providers": {
+      "digitalocean": {
+        "token": "0000000000000000000000000000000000000000000000000000000000000000"
       }
     }
   }

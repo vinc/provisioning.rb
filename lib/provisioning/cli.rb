@@ -7,67 +7,48 @@ require "provisioning"
 
 module Provisioning
   module CLI
-    def self.get_ssh_key(fingerprint)
-      Console.info("Getting SSH key from authentication agent")
-      agent = Net::SSH::Authentication::Agent.connect
-      agent.identities.find do |identity|
-        identity.fingerprint == fingerprint
-      end || Console.error("could not get key from the authentication agent, run `ssh-add`")
-    end
-
     def self.start(args, env)
-      json_file = args.shift || "manifest.json"
+      manifest = read_manifest_file(args.shift || "manifest.json")
 
-      begin
-        json = JSON.parse(File.open(json_file).read)
-      rescue Errno::ENOENT, JSON::ParserError
-        Console.error("could not read provisioning manifest file '#{json_file}'")
-      end
-
-      manifest = json["manifest"]
-
-      ssh_key_fingerprint = manifest["ssh"]["key"]["fingerprint"]
-
-      ssh_key = get_ssh_key(ssh_key_fingerprint)
-      puts
+      ssh_key = get_ssh_key(manifest["ssh"]["key"]["fingerprint"])
 
       app_name = manifest["app"]["name"]
-      domain = manifest["domain"]
-      platform = manifest["providers"]["platform"]
-      server_hostname = [platform, domain].join(".")
+      domain = manifest["dns"]["domain"]
+      platform_provider = manifest["platform"]["provider"]
+      server_hostname = [platform_provider, domain].join(".")
       server_address = nil
 
-      if manifest["providers"]["hosting"] == "digitalocean"
-        digitalocean = DigitalOcean.new(manifest["digitalocean"])
+      if manifest["hosting"]["provider"] == "digitalocean"
+        config = manifest["hosting"].merge(manifest["providers"]["digitalocean"])
+        hosting = Hosting::DigitalOcean.new(config)
 
-        digitalocean.upload_ssh_key(ssh_key)
-        puts
+        hosting.upload_ssh_key(ssh_key)
 
-        droplet = digitalocean.create_droplet(
+        server = hosting.find_or_create_server(
           name: server_hostname,
-          ssh_key_fingerprint: ssh_key_fingerprint
+          ssh_key: ssh_key
         )
-        server_address = droplet.networks.v4.first.ip_address
-        puts
+        server.wait_for { ready? }
+        server_address = server.public_ip_address
       end
 
-      if manifest["providers"]["dns"] == "digitalocean"
-        digitalocean = DigitalOcean.new(manifest["digitalocean"])
+      if manifest["dns"]["provider"] == "digitalocean"
+        config = manifest["dns"].merge(manifest["providers"]["digitalocean"])
+        dns = DNS::DigitalOcean.new(config)
 
-        digitalocean.create_domain(domain, server_address)
+        dns.create_domain(domain, server_address)
         Console.success("Configue '#{domain}' with the following DNS servers:")
-        digitalocean.get_domain_name_servers(domain).each do |server|
-          Console.success("  - #{server}")
+        dns.get_domain_name_servers(domain).each do |hostname|
+          Console.success("  - #{hostname}")
         end
-        puts
 
-        digitalocean.create_domain_record(
+        dns.create_domain_record(
           domain: domain,
           type: "A",
-          name: platform,
+          name: platform_provider,
           data: server_address
         )
-        digitalocean.create_domain_record(
+        dns.create_domain_record(
           domain: domain,
           type: "CNAME",
           name: app_name,
@@ -76,33 +57,47 @@ module Provisioning
         manifest["app"]["domains"].each do |app_domain|
           Console.success("Configue '#{app_domain}' to point to '#{server_hostname}'")
         end
-        puts
       end
 
-      # TODO: wait until server is up before trying to connect
-      if manifest["providers"]["platform"] == "dokku"
-        dokku = Dokku.new(manifest["dokku"])
+      if manifest["platform"]["provider"] == "dokku"
+        dokku = Platform::Dokku.new(manifest["platform"])
         dokku.setup(address: server_address, domain: domain)
         Console.success("Run `gem install dokku-cli` to get dokku client on your machine")
-        puts
 
         dokku.create_app(manifest["app"])
-        puts
 
         Console.info("Adding dokku to git remotes")
         begin
           git = Git.open(".")
         rescue ArgumentError
-          Console.warning("not a git repository, skipping")
+          Console.warning("Not a git repository, skipping")
         else
           if git.remotes.map(&:name).include?("dokku")
-            Console.warning("remote already exists, skipping")
+            Console.warning("Remote already exists, skipping")
           else
             git.add_remote("dokku", "dokku@#{server_hostname}:#{app_name}")
           end
           Console.success("Run `git push dokku master` to deploy your code")
         end
       end
+    end
+
+    def self.read_manifest_file(filename)
+      Console.info("Reading provisioning manifest file '#{filename}'")
+      begin
+        json = JSON.parse(File.open(filename).read)
+      rescue Errno::ENOENT, JSON::ParserError
+        Console.error("Could not read provisioning manifest file '#{filename}'")
+      end
+      json["manifest"]
+    end
+
+    def self.get_ssh_key(fingerprint)
+      Console.info("Getting SSH key from authentication agent")
+      agent = Net::SSH::Authentication::Agent.connect
+      agent.identities.find do |identity|
+        identity.fingerprint == fingerprint
+      end || Console.error("Could not get key from the authentication agent, run `ssh-add`")
     end
   end
 end
