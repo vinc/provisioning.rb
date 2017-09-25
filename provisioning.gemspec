@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = "provisioning"
-  s.version     = "0.0.1.alpha.1"
-  s.date        = "2017-09-23"
+  s.version     = "0.0.1.alpha.2"
+  s.date        = "2017-09-25"
   s.license     = "MIT"
   s.summary     = "PaaS Provisioning"
   s.description = s.summary

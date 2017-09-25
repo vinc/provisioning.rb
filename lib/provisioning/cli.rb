@@ -79,6 +79,7 @@ module Provisioning
         puts
       end
 
+      # TODO: wait until server is up before trying to connect
       if manifest["providers"]["platform"] == "dokku"
         dokku = Dokku.new(manifest["dokku"])
         dokku.setup(address: server_address, domain: domain)
