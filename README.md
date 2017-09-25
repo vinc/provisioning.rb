@@ -3,7 +3,7 @@ Provisioning.rb
 
 PaaS Provisioning.
 
-Currently limited to dokku apps on digital ocean servers.
+Currently limited to dokku apps on AWS or DigitalOcean servers.
 
 
 Installation
@@ -76,13 +76,11 @@ Provisioning manifest json file:
       "domain": "sfo1.example.net"
     },
     "ssh": {
-      "key": {
-        "fingerprint": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
-      }
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC1HxvTzPAMyE9tbbQ7drVYVEnrd1ViKZfOWTwrtGNX1vS7xJvpiNnAaabw0bPAtNV/fK7U/saIKJLkWVVpyf51rYS+YzBM3ZAexGyFqJKpKc9869A1O4Qih+bhTaoEEp7m31HZNY3QFmqxCIS69UE2bsMZgUr+rr+0uQqSkdQDQrBh8wDeFL6WkgkMuWg8ni9UP8JIQPRxkg232WC9r1mZ1KVlxRfesS9iY+Xu3MiGVMbo3mQbN1YzT6TQybG5SryBeRVQZTvwonumJS4ufPH9B1BGxQ1R24jDwFY0j1d5NQp1rr2OGax+EzNI/bUKvWcem/VI5uZ4Bev9IPqbvPbV example@provisioning.sh"
     },
     "providers": {
       "digitalocean": {
-        "token": "0000000000000000000000000000000000000000000000000000000000000000"
+        "digitalocean_token": "0000000000000000000000000000000000000000000000000000000000000000"
       }
     }
   }

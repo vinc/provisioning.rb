@@ -4,22 +4,24 @@ require "provisioning"
 
 module Provisioning
   module Hosting
-    class DigitalOcean
+    class Digitalocean
+      KEY_NAME = "provisioning key".freeze
+
       def initialize(config)
         @config = config
         @client = Fog::Compute.new(
           provider: :digitalocean,
-          digitalocean_token: @config["token"]
+          digitalocean_token: @config["digitalocean_token"]
         )
       end
 
       def upload_ssh_key(ssh_key)
-        Console.info("Uploading SSH keys to #{self.class}")
+        Console.info("Uploading SSH key to DigitalOcean")
         if @client.ssh_keys.all.map(&:fingerprint).include?(ssh_key.fingerprint)
           Console.warning("SSH key already uploaded, skipping")
         else
-          compute.ssh_keys.create(
-            name: "provisioning key",
+          @client.ssh_keys.create(
+            name: KEY_NAME,
             ssh_pub_key: ssh_key.to_s
           )
         end

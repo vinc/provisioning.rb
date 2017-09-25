@@ -15,10 +15,13 @@ Gem::Specification.new do |s|
     "lib/provisioning/cli.rb",
     "lib/provisioning/console.rb",
     "lib/provisioning/dns/digitalocean.rb",
+    "lib/provisioning/hosting/aws.rb",
     "lib/provisioning/hosting/digitalocean.rb",
-    "lib/provisioning/platform/dokku.rb"
+    "lib/provisioning/platform/dokku.rb",
+    "lib/provisioning/public_key.rb"
   ]
   s.executables << "provision"
+  s.add_runtime_dependency("fog-aws",          "~> 1.4", ">= 1.4.0")
   s.add_runtime_dependency("fog-digitalocean", "~> 0.3", ">= 0.3.0")
   s.add_runtime_dependency("git",              "~> 1.3", ">= 1.3.0")
   s.add_runtime_dependency("rainbow",          "~> 2.2", ">= 2.2.0")
