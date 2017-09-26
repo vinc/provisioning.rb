@@ -3,8 +3,8 @@ Gem::Specification.new do |s|
   s.version     = "0.0.1.alpha.2"
   s.date        = "2017-09-25"
   s.license     = "MIT"
-  s.summary     = "PaaS Provisioning"
-  s.description = s.summary
+  s.summary     = "Open PaaS provisioning"
+  s.description = "Open PaaS provisioning on cloud providers from JSON manifest file"
   s.homepage    = "https://github.com/vinc/provisioning.rb"
   s.email       = "v@vinc.cc"
   s.authors     = [

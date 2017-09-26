@@ -1,7 +1,10 @@
 Provisioning.rb
 ===============
 
-PaaS Provisioning.
+Open PaaS provisioning.
+
+This gem will install a `provision` command for provisioning an open
+platform-as-a-service (PaaS) from a JSON manifest file.
 
 Currently limited to dokku apps on AWS or DigitalOcean servers.
 
