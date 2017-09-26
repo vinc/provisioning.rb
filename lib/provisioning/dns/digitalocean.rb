@@ -7,7 +7,9 @@ module Provisioning
     class Digitalocean
       def initialize(config)
         @config = config
-        @client = DropletKit::Client.new(access_token: @config["digitalocean_token"])
+        @client = DropletKit::Client.new(
+          access_token: @config["digitalocean_token"].presence || ENV["DIGITALOCEAN_TOKEN"]
+        )
       end
 
       def create_domain(name, address)

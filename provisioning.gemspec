@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
     "Vincent Ollivier"
   ]
   s.files       = [
+    "lib/object.rb",
     "lib/provisioning.rb",
     "lib/provisioning/cli.rb",
     "lib/provisioning/console.rb",

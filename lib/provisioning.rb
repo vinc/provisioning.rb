@@ -1,3 +1,4 @@
+require "object"
 require "provisioning/cli"
 require "provisioning/console"
 require "provisioning/dns/digitalocean"
