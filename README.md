@@ -21,17 +21,16 @@ Alternatively you can build the gem from its repository:
     $ gem build provisioning.gemspec
     $ gem install provisioning-0.0.1.gem
 
+
 Usage
 -----
 
 Run the provisioning script:
 
     $ provision manifest.json
-    Getting SSH key from authentication agent
-
     Uploading SSH key to DigitalOcean
 
-    Creating droplet 'dokku.server.net'
+    Creating server 'dokku.server.net'
 
     Creating domain 'server.net'
     Configue 'server.net' with the following DNS servers:
@@ -77,14 +76,6 @@ Provisioning manifest json file:
     "dns": {
       "provider": "digitalocean",
       "domain": "sfo1.example.net"
-    },
-    "ssh": {
-      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC1HxvTzPAMyE9tbbQ7drVYVEnrd1ViKZfOWTwrtGNX1vS7xJvpiNnAaabw0bPAtNV/fK7U/saIKJLkWVVpyf51rYS+YzBM3ZAexGyFqJKpKc9869A1O4Qih+bhTaoEEp7m31HZNY3QFmqxCIS69UE2bsMZgUr+rr+0uQqSkdQDQrBh8wDeFL6WkgkMuWg8ni9UP8JIQPRxkg232WC9r1mZ1KVlxRfesS9iY+Xu3MiGVMbo3mQbN1YzT6TQybG5SryBeRVQZTvwonumJS4ufPH9B1BGxQ1R24jDwFY0j1d5NQp1rr2OGax+EzNI/bUKvWcem/VI5uZ4Bev9IPqbvPbV example@provisioning.sh"
-    },
-    "providers": {
-      "digitalocean": {
-        "digitalocean_token": "0000000000000000000000000000000000000000000000000000000000000000"
-      }
     }
   }
 }

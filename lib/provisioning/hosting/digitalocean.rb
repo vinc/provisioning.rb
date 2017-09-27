@@ -11,7 +11,7 @@ module Provisioning
         @config = config
         @client = Fog::Compute.new(
           provider: :digitalocean,
-          digitalocean_token: @config["digitalocean_token"].presence || ENV["DIGITALOCEAN_TOKEN"]
+          digitalocean_token: ENV["DIGITALOCEAN_TOKEN"]
         )
       end
 

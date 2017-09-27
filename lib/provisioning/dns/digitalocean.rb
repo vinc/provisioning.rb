@@ -8,7 +8,7 @@ module Provisioning
       def initialize(config)
         @config = config
         @client = DropletKit::Client.new(
-          access_token: @config["digitalocean_token"].presence || ENV["DIGITALOCEAN_TOKEN"]
+          access_token: ENV["DIGITALOCEAN_TOKEN"]
         )
       end
 

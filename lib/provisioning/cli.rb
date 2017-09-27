@@ -10,8 +10,7 @@ module Provisioning
     def self.start(args, env)
       manifest = read_manifest_file(args.shift || "manifest.json")
 
-      #ssh_key = get_ssh_key(manifest["ssh"]["key"])
-      ssh_key = PublicKey.new(manifest["ssh"]["key"])
+      ssh_key = PublicKey.new(ENV["SSH_PUBLIC_KEY"])
 
       app_name = manifest["app"]["name"]
       domain = manifest["dns"]["domain"]
@@ -20,7 +19,7 @@ module Provisioning
       server_address = nil
 
       hosting_provider = manifest["hosting"]["provider"]
-      config = manifest["hosting"].merge(manifest["providers"][hosting_provider] || {})
+      config = manifest["hosting"]
       hosting = Hosting.const_get(hosting_provider.capitalize).new(config)
 
       hosting.upload_ssh_key(ssh_key)
@@ -33,7 +32,7 @@ module Provisioning
       server_address = server.public_ip_address
 
       dns_provider = manifest["dns"]["provider"]
-      config = manifest["dns"].merge(manifest["providers"][dns_provider] || {})
+      config = manifest["dns"]
       dns = DNS.const_get(dns_provider.capitalize).new(config)
       dns.create_domain(domain, server_address)
       Console.success("Configue '#{domain}' with the following DNS servers:")
@@ -58,7 +57,7 @@ module Provisioning
       end
 
       platform_provider = manifest["platform"]["provider"]
-      config = manifest["platform"].merge(manifest["providers"][platform_provider] || {})
+      config = manifest["platform"]
       platform = Platform.const_get(platform_provider.capitalize).new(config)
       if platform_provider == "dokku"
         platform.setup(address: server_address, domain: domain)
@@ -90,14 +89,6 @@ module Provisioning
         Console.error("Could not read provisioning manifest file '#{filename}'")
       end
       json["manifest"]
-    end
-
-    def self.get_ssh_key(fingerprint)
-      Console.info("Getting SSH key from authentication agent")
-      agent = Net::SSH::Authentication::Agent.connect
-      agent.identities.find do |identity|
-        identity.fingerprint == fingerprint
-      end || Console.error("Could not get key from the authentication agent, run `ssh-add`")
     end
   end
 end

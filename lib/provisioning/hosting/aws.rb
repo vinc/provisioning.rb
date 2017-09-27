@@ -12,8 +12,8 @@ module Provisioning
         @client = Fog::Compute.new(
           provider: "aws",
           region: @config["region"],
-          aws_access_key_id: @config["aws_access_key_id"].presence || ENV["AWS_ACCESS_KEY_ID"],
-          aws_secret_access_key: @config["aws_secret_access_key"].presence || ENV["AWS_SECRET_ACCESS_KEY"]
+          aws_access_key_id: ENV["AWS_ACCESS_KEY_ID"],
+          aws_secret_access_key: ENV["AWS_SECRET_ACCESS_KEY"]
         )
       end
 
