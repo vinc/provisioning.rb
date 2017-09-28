@@ -34,9 +34,12 @@ module Provisioning
 
     def parse_opts(args)
       Trollop::options(args) do
-        opt :verbose, "Use verbose mode"
+        version "Provisioning v#{Provisioning::VERSION}"
         opt :silent,  "Use silent mode"
+        opt :verbose, "Use verbose mode"
         opt :mock,    "Use mock mode"
+        opt :help,    "Show this message"
+        opt :version, "Print version and exit", short: "V"
       end
     end
 
