@@ -5,10 +5,10 @@ require "provisioning"
 module Provisioning
   module DNS
     class Digitalocean
-      def initialize(config)
+      def initialize(config, env)
         @config = config
         @client = DropletKit::Client.new(
-          access_token: ENV["DIGITALOCEAN_TOKEN"]
+          access_token: env["DIGITALOCEAN_TOKEN"]
         )
       end
 

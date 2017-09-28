@@ -7,13 +7,13 @@ module Provisioning
     class Aws
       KEY_NAME = "provisioning key".freeze
 
-      def initialize(config)
+      def initialize(config, env)
         @config = config
         @client = Fog::Compute.new(
           provider: "aws",
           region: @config["region"],
-          aws_access_key_id: ENV["AWS_ACCESS_KEY_ID"],
-          aws_secret_access_key: ENV["AWS_SECRET_ACCESS_KEY"]
+          aws_access_key_id: env["AWS_ACCESS_KEY_ID"],
+          aws_secret_access_key: env["AWS_SECRET_ACCESS_KEY"]
         )
       end
 

@@ -9,6 +9,7 @@ module Provisioning
   class CLI
     def initialize(args, env)
       @manifest = self.class.read_manifest_file(args.shift || "manifest.json")
+      @env = env
 
       set_instance_variable_from_manifest(%w[app name])
       set_instance_variable_from_manifest(%w[platform domain])
@@ -19,7 +20,7 @@ module Provisioning
       @server_address = nil
       @server_hostname = [@platform_provider, @platform_domain].join(".")
 
-      @ssh_key = PublicKey.new(ENV["SSH_PUBLIC_KEY"])
+      @ssh_key = PublicKey.new(@env["SSH_PUBLIC_KEY"])
     end
 
     def run
@@ -31,7 +32,7 @@ module Provisioning
 
     def provision_compute
       config = @manifest["compute"]
-      compute = Compute.const_get(@compute_provider.capitalize).new(config)
+      compute = Compute.const_get(@compute_provider.capitalize).new(config, @env)
 
       compute.upload_ssh_key(@ssh_key)
 
@@ -45,7 +46,7 @@ module Provisioning
 
     def provision_dns
       config = @manifest["dns"]
-      dns = DNS.const_get(@dns_provider.capitalize).new(config)
+      dns = DNS.const_get(@dns_provider.capitalize).new(config, @env)
 
       dns.create_domain(@platform_domain, @server_address)
       Console.success("Configue '#{@platform_domain}' with the following DNS servers:")
@@ -74,7 +75,7 @@ module Provisioning
 
     def provision_platform
       config = @manifest["platform"]
-      platform = Platform.const_get(@platform_provider.capitalize).new(config)
+      platform = Platform.const_get(@platform_provider.capitalize).new(config, @env)
 
       platform.setup(address: @server_address, domain: @platform_domain)
       platform.create_app(@manifest["app"])

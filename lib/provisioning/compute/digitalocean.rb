@@ -7,11 +7,11 @@ module Provisioning
     class Digitalocean
       KEY_NAME = "provisioning key".freeze
 
-      def initialize(config)
+      def initialize(config, env)
         @config = config
         @client = Fog::Compute.new(
           provider: :digitalocean,
-          digitalocean_token: ENV["DIGITALOCEAN_TOKEN"]
+          digitalocean_token: env["DIGITALOCEAN_TOKEN"]
         )
       end
 
