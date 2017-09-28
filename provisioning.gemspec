@@ -22,10 +22,11 @@ Gem::Specification.new do |s|
     "lib/provisioning/public_key.rb"
   ]
   s.executables << "provision"
+  s.add_runtime_dependency("droplet_kit",      "~> 2.1", ">= 2.1.0")
   s.add_runtime_dependency("fog-aws",          "~> 1.4", ">= 1.4.0")
   s.add_runtime_dependency("fog-digitalocean", "~> 0.3", ">= 0.3.0")
   s.add_runtime_dependency("git",              "~> 1.3", ">= 1.3.0")
-  s.add_runtime_dependency("rainbow",          "~> 2.2", ">= 2.2.0")
-  s.add_runtime_dependency("droplet_kit",      "~> 2.1", ">= 2.1.0")
   s.add_runtime_dependency("net-ssh",          "~> 4.1", ">= 4.1.0")
+  s.add_runtime_dependency("rainbow",          "~> 2.2", ">= 2.2.0")
+  s.add_runtime_dependency("trollop",          "~> 2.1", ">= 2.1.0")
 end

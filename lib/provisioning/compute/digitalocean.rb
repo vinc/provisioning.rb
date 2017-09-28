@@ -7,9 +7,10 @@ module Provisioning
     class Digitalocean
       KEY_NAME = "provisioning key".freeze
 
-      def initialize(config, env)
-        Fog.mock! if env["MOCK"]
+      def initialize(config, opts, env)
         @config = config
+        @opts = opts
+        Fog.mock! if @opts[:mock]
         @client = Fog::Compute.new(
           provider: :digitalocean,
           digitalocean_token: env["DIGITALOCEAN_TOKEN"]

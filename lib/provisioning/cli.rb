@@ -2,15 +2,23 @@ require "git"
 require "json"
 require "net/ssh"
 require "rainbow"
+require "trollop"
 
 require "provisioning"
 
 module Provisioning
   class CLI
     def initialize(args, env)
-      @manifest = self.class.read_manifest_file(args.shift || "manifest.json")
+      @opts = parse_opts(args)
       @env = env
-      @mock = env["MOCK"]
+
+      if @opts[:silent]
+        Console.silent_mode!
+      elsif @opts[:verbose]
+        Console.debug_mode!
+      end
+
+      @manifest = self.class.read_manifest_file(args.shift || "manifest.json")
 
       set_instance_variable_from_manifest(%w[app name])
       set_instance_variable_from_manifest(%w[platform domain])
@@ -24,6 +32,14 @@ module Provisioning
       @ssh_key = PublicKey.new(@env["SSH_PUBLIC_KEY"])
     end
 
+    def parse_opts(args)
+      Trollop::options(args) do
+        opt :verbose, "Use verbose mode"
+        opt :silent,  "Use silent mode"
+        opt :mock,    "Use mock mode"
+      end
+    end
+
     def run
       provision_compute
       provision_dns
@@ -32,8 +48,8 @@ module Provisioning
     end
 
     def provision_compute
-      config = @manifest["compute"]
-      compute = Compute.const_get(@compute_provider.capitalize).new(config, @env)
+      klass = Compute.const_get(@compute_provider.capitalize)
+      compute = klass.new(@manifest["compute"], @opts, @env)
 
       compute.upload_ssh_key(@ssh_key)
 
@@ -46,8 +62,8 @@ module Provisioning
     end
 
     def provision_dns
-      config = @manifest["dns"]
-      dns = DNS.const_get(@dns_provider.capitalize).new(config, @env)
+      klass = DNS.const_get(@dns_provider.capitalize)
+      dns = klass.new(@manifest["dns"], @opts, @env)
 
       dns.create_domain(@platform_domain, @server_address)
       Console.success("Configue '#{@platform_domain}' with the following DNS servers:")
@@ -75,8 +91,8 @@ module Provisioning
     end
 
     def provision_platform
-      config = @manifest["platform"]
-      platform = Platform.const_get(@platform_provider.capitalize).new(config, @env)
+      klass = Platform.const_get(@platform_provider.capitalize)
+      platform = klass.new(@manifest["platform"], @opts, @env)
 
       platform.setup(address: @server_address, domain: @platform_domain)
       platform.create_app(@manifest["app"])
@@ -89,7 +105,7 @@ module Provisioning
 
     def add_git_remote
       Console.info("Adding #{@platform_provider} to git remotes")
-      return if @mock
+      return if @opts[:mock]
       begin
         git = Git.open(".")
       rescue ArgumentError
