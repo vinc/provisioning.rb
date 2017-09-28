@@ -16,8 +16,8 @@ Gem::Specification.new do |s|
     "lib/provisioning/cli.rb",
     "lib/provisioning/console.rb",
     "lib/provisioning/dns/digitalocean.rb",
-    "lib/provisioning/hosting/aws.rb",
-    "lib/provisioning/hosting/digitalocean.rb",
+    "lib/provisioning/compute/aws.rb",
+    "lib/provisioning/compute/digitalocean.rb",
     "lib/provisioning/platform/dokku.rb",
     "lib/provisioning/public_key.rb"
   ]

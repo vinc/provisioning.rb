@@ -13,7 +13,7 @@ module Provisioning
       set_instance_variable_from_manifest(%w[app name])
       set_instance_variable_from_manifest(%w[platform domain])
       set_instance_variable_from_manifest(%w[platform provider])
-      set_instance_variable_from_manifest(%w[hosting provider])
+      set_instance_variable_from_manifest(%w[compute provider])
       set_instance_variable_from_manifest(%w[dns provider])
 
       @server_address = nil
@@ -23,19 +23,19 @@ module Provisioning
     end
 
     def run
-      provision_hosting
+      provision_compute
       provision_dns
       provision_platform
       add_git_remote
     end
 
-    def provision_hosting
-      config = @manifest["hosting"]
-      hosting = Hosting.const_get(@hosting_provider.capitalize).new(config)
+    def provision_compute
+      config = @manifest["compute"]
+      compute = Compute.const_get(@compute_provider.capitalize).new(config)
 
-      hosting.upload_ssh_key(@ssh_key)
+      compute.upload_ssh_key(@ssh_key)
 
-      server = hosting.find_or_create_server(
+      server = compute.find_or_create_server(
         name: @server_hostname,
         ssh_key: @ssh_key
       )

@@ -66,13 +66,11 @@ Provisioning manifest json file:
       "domain": "sfo1.example.net",
       "version": "v0.10.4"
     },
-    "hosting": {
+    "compute": {
       "provider": "digitalocean",
-      "server": {
-        "region": "sfo1",
-        "image": "ubuntu-16-04-x64",
-        "size": "1gb"
-      }
+      "region": "sfo1",
+      "image": "ubuntu-16-04-x64",
+      "size": "1gb"
     },
     "dns": {
       "provider": "digitalocean"

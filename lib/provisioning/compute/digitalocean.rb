@@ -3,7 +3,7 @@ require "fog/digitalocean"
 require "provisioning"
 
 module Provisioning
-  module Hosting
+  module Compute
     class Digitalocean
       KEY_NAME = "provisioning key".freeze
 
@@ -39,9 +39,9 @@ module Provisioning
 
         @client.servers.create(
           name: name,
-          region: @config["server"]["region"],
-          image: @config["server"]["image"],
-          size: @config["server"]["size"],
+          region: @config["region"],
+          image: @config["image"],
+          size: @config["size"],
           ssh_keys: [ssh_key.fingerprint]
         )
       end

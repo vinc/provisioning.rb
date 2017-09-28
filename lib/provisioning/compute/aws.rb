@@ -3,7 +3,7 @@ require "fog/aws"
 require "provisioning"
 
 module Provisioning
-  module Hosting
+  module Compute
     class Aws
       KEY_NAME = "provisioning key".freeze
 
@@ -37,8 +37,8 @@ module Provisioning
         end
 
         @client.servers.create(
-          image_id: @config["server"]["image_id"],
-          flavor_id: @config["server"]["flavor_id"],
+          image_id: @config["image_id"],
+          flavor_id: @config["flavor_id"],
           tags: { name: name },
           key_name: KEY_NAME
         )
