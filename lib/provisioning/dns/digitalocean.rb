@@ -7,15 +7,17 @@ module Provisioning
     class Digitalocean
       def initialize(config, env)
         @config = config
+        @mock = env["MOCK"]
         @client = DropletKit::Client.new(
           access_token: env["DIGITALOCEAN_TOKEN"]
-        )
+        ) unless @mock
       end
 
       def create_domain(name, address)
         Console.info("Creating domain '#{name}'")
 
         disable_verbose
+        return if @mock
         if @client.domains.all.map(&:name).include?(name)
           Console.warning("Domain already exists, skipping")
         else
@@ -30,6 +32,7 @@ module Provisioning
         Console.info("Creating domain record #{type} '#{name}.#{domain}' to '#{data}'")
 
         disable_verbose
+        return if @mock
         if @client.domain_records.all(for_domain: domain).map(&:name).include?(name)
           Console.warning("Record already exists, skipping")
         else
@@ -42,6 +45,7 @@ module Provisioning
 
       def get_domain_name_servers(domain)
         disable_verbose
+        return %w[ns1.example.net ns2.example.net] if @mock
         @client.domain_records.all(for_domain: domain).
           select { |r| r.type == "NS" }.
           map(&:data)

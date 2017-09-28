@@ -5,7 +5,8 @@ require "provisioning"
 module Provisioning
   module Platform
     class Dokku
-      def initialize(config)
+      def initialize(config, env)
+        @mock = env["MOCK"]
         @config = config
         @servers = []
       end
@@ -14,6 +15,7 @@ module Provisioning
         @servers << address
         version = @config["version"]
         Console.info("Installing dokku #{version} on '#{address}'")
+        return if @mock
         Net::SSH.start(address, "root") do |ssh|
           if ssh.exec!("which dokku").present?
             Console.warning("Dokku already installed, skipping")
@@ -33,6 +35,7 @@ module Provisioning
         name = config["name"]
         @servers.each do |address|
           Console.info("Creating dokku app '#{name}' on '#{address}'")
+          return if @mock
           Net::SSH.start(address, "root") do |ssh|
             existing_apps = ssh.exec!("dokku apps").to_s.lines.map(&:chomp)
             if existing_apps.include?(name)

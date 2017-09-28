@@ -8,6 +8,7 @@ module Provisioning
       KEY_NAME = "provisioning key".freeze
 
       def initialize(config, env)
+        Fog.mock! if env["MOCK"]
         @config = config
         @client = Fog::Compute.new(
           provider: :digitalocean,
@@ -22,7 +23,7 @@ module Provisioning
         else
           @client.ssh_keys.create(
             name: KEY_NAME,
-            ssh_pub_key: ssh_key.to_s
+            public_key: ssh_key.to_s
           )
         end
       end

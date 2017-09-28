@@ -8,6 +8,7 @@ module Provisioning
       KEY_NAME = "provisioning key".freeze
 
       def initialize(config, env)
+        Fog.mock! if env["MOCK"]
         @config = config
         @client = Fog::Compute.new(
           provider: "aws",

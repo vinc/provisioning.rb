@@ -10,6 +10,7 @@ module Provisioning
     def initialize(args, env)
       @manifest = self.class.read_manifest_file(args.shift || "manifest.json")
       @env = env
+      @mock = env["MOCK"]
 
       set_instance_variable_from_manifest(%w[app name])
       set_instance_variable_from_manifest(%w[platform domain])
@@ -88,6 +89,7 @@ module Provisioning
 
     def add_git_remote
       Console.info("Adding #{@platform_provider} to git remotes")
+      return if @mock
       begin
         git = Git.open(".")
       rescue ArgumentError
