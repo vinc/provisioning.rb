@@ -2,4 +2,4 @@
 
 require "provisioning"
 
-Provisioning::CLI.start(ARGV, ENV)
+Provisioning::CLI.new(ARGV, ENV).run

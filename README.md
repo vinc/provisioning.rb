@@ -63,6 +63,7 @@ Provisioning manifest json file:
     },
     "platform": {
       "provider": "dokku",
+      "domain": "sfo1.example.net",
       "version": "v0.10.4"
     },
     "hosting": {
@@ -74,8 +75,7 @@ Provisioning manifest json file:
       }
     },
     "dns": {
-      "provider": "digitalocean",
-      "domain": "sfo1.example.net"
+      "provider": "digitalocean"
     }
   }
 }

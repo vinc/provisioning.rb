@@ -6,78 +6,102 @@ require "rainbow"
 require "provisioning"
 
 module Provisioning
-  module CLI
-    def self.start(args, env)
-      manifest = read_manifest_file(args.shift || "manifest.json")
+  class CLI
+    def initialize(args, env)
+      @manifest = self.class.read_manifest_file(args.shift || "manifest.json")
 
-      ssh_key = PublicKey.new(ENV["SSH_PUBLIC_KEY"])
+      set_instance_variable_from_manifest(%w[app name])
+      set_instance_variable_from_manifest(%w[platform domain])
+      set_instance_variable_from_manifest(%w[platform provider])
+      set_instance_variable_from_manifest(%w[hosting provider])
+      set_instance_variable_from_manifest(%w[dns provider])
 
-      app_name = manifest["app"]["name"]
-      domain = manifest["dns"]["domain"]
-      platform_provider = manifest["platform"]["provider"]
-      server_hostname = [platform_provider, domain].join(".")
-      server_address = nil
+      @server_address = nil
+      @server_hostname = [@platform_provider, @platform_domain].join(".")
 
-      hosting_provider = manifest["hosting"]["provider"]
-      config = manifest["hosting"]
-      hosting = Hosting.const_get(hosting_provider.capitalize).new(config)
+      @ssh_key = PublicKey.new(ENV["SSH_PUBLIC_KEY"])
+    end
 
-      hosting.upload_ssh_key(ssh_key)
+    def run
+      provision_hosting
+      provision_dns
+      provision_platform
+      add_git_remote
+    end
+
+    def provision_hosting
+      config = @manifest["hosting"]
+      hosting = Hosting.const_get(@hosting_provider.capitalize).new(config)
+
+      hosting.upload_ssh_key(@ssh_key)
 
       server = hosting.find_or_create_server(
-        name: server_hostname,
-        ssh_key: ssh_key
+        name: @server_hostname,
+        ssh_key: @ssh_key
       )
       server.wait_for { ready? }
-      server_address = server.public_ip_address
+      @server_address = server.public_ip_address
+    end
 
-      dns_provider = manifest["dns"]["provider"]
-      config = manifest["dns"]
-      dns = DNS.const_get(dns_provider.capitalize).new(config)
-      dns.create_domain(domain, server_address)
-      Console.success("Configue '#{domain}' with the following DNS servers:")
-      dns.get_domain_name_servers(domain).each do |hostname|
+    def provision_dns
+      config = @manifest["dns"]
+      dns = DNS.const_get(@dns_provider.capitalize).new(config)
+
+      dns.create_domain(@platform_domain, @server_address)
+      Console.success("Configue '#{@platform_domain}' with the following DNS servers:")
+      dns.get_domain_name_servers(@platform_domain).each do |hostname|
         Console.success("  - #{hostname}")
       end
 
       dns.create_domain_record(
-        domain: domain,
+        domain: @platform_domain,
         type: "A",
-        name: platform_provider,
-        data: server_address
+        name: @platform_provider,
+        data: @server_address
       )
+
       dns.create_domain_record(
-        domain: domain,
+        domain: @platform_domain,
         type: "CNAME",
-        name: app_name,
-        data: "#{server_hostname}."
+        name: @app_name,
+        data: @server_hostname + "."
       )
-      manifest["app"]["domains"].each do |app_domain|
-        Console.success("Configue '#{app_domain}' to point to '#{server_hostname}'")
+
+      @manifest["app"]["domains"].each do |app_domain|
+        Console.success("Configue '#{app_domain}' to point to '#{@server_hostname}'")
       end
+    end
 
-      platform_provider = manifest["platform"]["provider"]
-      config = manifest["platform"]
-      platform = Platform.const_get(platform_provider.capitalize).new(config)
-      if platform_provider == "dokku"
-        platform.setup(address: server_address, domain: domain)
-        Console.success("Run `gem install dokku-cli` to get dokku client on your machine")
+    def provision_platform
+      config = @manifest["platform"]
+      platform = Platform.const_get(@platform_provider.capitalize).new(config)
 
-        platform.create_app(manifest["app"])
+      platform.setup(address: @server_address, domain: @platform_domain)
+      platform.create_app(@manifest["app"])
 
-        Console.info("Adding dokku to git remotes")
-        begin
-          git = Git.open(".")
-        rescue ArgumentError
-          Console.warning("Not a git repository, skipping")
+      case @platform_provider
+      when "dokku"
+        Console.success("Run `gem install dokku-cli` to get dokku client on your computer")
+      end
+    end
+
+    def add_git_remote
+      Console.info("Adding #{@platform_provider} to git remotes")
+      begin
+        git = Git.open(".")
+      rescue ArgumentError
+        Console.warning("Not a git repository, skipping")
+      else
+        if git.remotes.map(&:name).include?(@platform_provider)
+          Console.warning("Remote already exists, skipping")
         else
-          if git.remotes.map(&:name).include?("dokku")
-            Console.warning("Remote already exists, skipping")
-          else
-            git.add_remote("dokku", "dokku@#{server_hostname}:#{app_name}")
+          case @platform_provider
+          when "dokku"
+            url = "#{@platform_provider}@#{@server_hostname}:#{@app_name}"
+            git.add_remote(@platform_provider, url)
           end
-          Console.success("Run `git push dokku master` to deploy your code")
         end
+        Console.success("Run `git push dokku master` to deploy your code")
       end
     end
 
@@ -89,6 +113,23 @@ module Provisioning
         Console.error("Could not read provisioning manifest file '#{filename}'")
       end
       json["manifest"]
+    end
+
+    private
+
+    def set_instance_variable_from_manifest(keys)
+      name = "@" + keys.join("_")
+      instance_variable_set(name, dig_manifest(keys))
+    end
+
+    def dig_manifest(keys)
+      path = []
+      hash = @manifest
+      keys.each do |key|
+        path << key
+        hash = hash[key] || Console.error("Could not find #{path.join(".")} in manifest")
+      end
+      hash
     end
   end
 end

@@ -7,6 +7,7 @@
     },
     "platform": {
       "provider": "dokku",
+      "domain": "sfo1.example.net",
       "version": "v0.10.4"
     },
     "hosting": {
@@ -18,8 +19,7 @@
       }
     },
     "dns": {
-      "provider": "digitalocean",
-      "domain": "sfo1.example.net"
+      "provider": "digitalocean"
     }
   }
 }
