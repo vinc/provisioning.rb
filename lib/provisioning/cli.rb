@@ -68,24 +68,28 @@ module Provisioning
       klass = DNS.const_get(@dns_provider.capitalize)
       dns = klass.new(@manifest["dns"], @opts, @env)
 
-      dns.create_domain(@platform_domain, @server_address)
+      dns.create_zone(@platform_domain, @server_address)
       Console.success("Configue '#{@platform_domain}' with the following DNS servers:")
-      dns.get_domain_name_servers(@platform_domain).each do |hostname|
+      dns.get_name_servers(@platform_domain).each do |hostname|
         Console.success("  - #{hostname}")
       end
 
-      dns.create_domain_record(
-        domain: @platform_domain,
+      dns.create_record(@platform_domain,
         type: "A",
-        name: @platform_provider,
+        name: [@platform_domain, ""].join("."),
         data: @server_address
       )
 
-      dns.create_domain_record(
-        domain: @platform_domain,
+      dns.create_record(@platform_domain,
+        type: "A",
+        name: [@platform_provider, @platform_domain, ""].join("."),
+        data: @server_address
+      )
+
+      dns.create_record(@platform_domain,
         type: "CNAME",
-        name: @app_name,
-        data: @server_hostname + "."
+        name: [@app_name, @platform_domain, ""].join("."),
+        data: [@server_hostname, ""].join(".")
       )
 
       @manifest["app"]["domains"].each do |app_domain|

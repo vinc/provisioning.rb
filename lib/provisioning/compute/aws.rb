@@ -38,6 +38,7 @@ module Provisioning
           end
         end
 
+        # TODO: set instance name instead of tagging it
         @client.servers.create(
           image_id: @config["image_id"],
           flavor_id: @config["flavor_id"],

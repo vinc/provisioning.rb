@@ -13,8 +13,8 @@ module Provisioning
         ) unless @opts[:mock]
       end
 
-      def create_domain(name, address)
-        Console.info("Creating domain '#{name}'")
+      def create_zone(name, address)
+        Console.info("Creating zone '#{name}'")
 
         disable_verbose
         return if @opts[:mock]
@@ -28,8 +28,9 @@ module Provisioning
         restore_verbose
       end
 
-      def create_domain_record(domain:, type:, name:, data:)
-        Console.info("Creating domain record #{type} '#{name}.#{domain}' to '#{data}'")
+      def create_record(domain, type:, name:, data:)
+        name = name.gsub("#{domain}.", "@").gsub(".@", "")
+        Console.info("Creating domain record #{type} '#{name}' to '#{data}'")
 
         disable_verbose
         return if @opts[:mock]
@@ -43,7 +44,7 @@ module Provisioning
         restore_verbose
       end
 
-      def get_domain_name_servers(domain)
+      def get_name_servers(domain)
         disable_verbose
         return %w[ns1.example.net ns2.example.net] if @opts[:mock]
         @client.domain_records.all(for_domain: domain).

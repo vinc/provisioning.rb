@@ -20,6 +20,7 @@ module Provisioning
           if ssh_exec(ssh, "which dokku", user: user).present?
             Console.warning("Dokku already installed, skipping")
           else
+            # TODO: configure hostname
             [
               "wget https://raw.githubusercontent.com/dokku/dokku/#{version}/bootstrap.sh",
               "DOKKU_TAG=#{version} bash bootstrap.sh",
@@ -46,7 +47,7 @@ module Provisioning
               Console.debug(ssh_exec(ssh, "dokku apps:create #{name}", user: user))
 
               config["services"].each do |service|
-                #TODO check if service exists
+                # TODO: check if service exists
                 [
                   "dokku plugin:install https://github.com/dokku/dokku-#{service}.git #{service}",
                   "dokku #{service}:create #{name}-#{service}",
