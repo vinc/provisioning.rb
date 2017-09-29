@@ -97,7 +97,11 @@ module Provisioning
       klass = Platform.const_get(@platform_provider.capitalize)
       platform = klass.new(@manifest["platform"], @opts, @env)
 
-      platform.setup(address: @server_address, domain: @platform_domain)
+      platform.setup(
+        address: @server_address,
+        domain: @platform_domain,
+        user: @compute_provider == "aws" ? "ubuntu" : "root"
+      )
       platform.create_app(@manifest["app"])
 
       case @platform_provider
