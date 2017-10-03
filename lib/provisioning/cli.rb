@@ -29,7 +29,9 @@ module Provisioning
       @server_address = nil
       @server_hostname = [@platform_provider, @platform_domain].join(".")
 
-      @ssh_key = PublicKey.new(@env["SSH_PUBLIC_KEY"])
+      key_path = File.join(@env["HOME"], ".ssh/id_rsa.pub")
+      key_body = @env["SSH_PUBLIC_KEY"] || File.open(key_path).read
+      @ssh_key = PublicKey.new(key_body)
     end
 
     def parse_opts(args)
