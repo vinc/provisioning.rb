@@ -16,7 +16,7 @@ module Provisioning
         )
       end
 
-      def create_zone(domain, address)
+      def create_zone(domain)
         Console.info("Creating zone '#{domain}'")
 
         zone = get_zone(domain)
@@ -27,14 +27,15 @@ module Provisioning
         end
       end
 
-      def create_record(domain, type:, name:, data:)
-        Console.info("Creating domain record #{type} '#{name}' to '#{data}'")
+      def create_record(domain, type:, name:, value:)
+        value_to_s = value.is_a?(Array) ? value.join(", ") : value
+        Console.info("Creating domain record #{type} '#{name}' to '#{value_to_s}'")
 
         zone = get_zone(domain)
-        if zone.records.get(name, type)
+        if zone.records.get(name, type) == value
           Console.warning("Record already exists, skipping")
         else
-          zone.records.create(type: type, name: name, value: data)
+          zone.records.create(type: type, name: name, value: value)
         end
       end
 

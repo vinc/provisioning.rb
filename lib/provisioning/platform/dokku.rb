@@ -33,7 +33,7 @@ module Provisioning
         name = fetch("name", config: config)
         @servers.each do |address, user|
           Console.info("Creating dokku app '#{name}' on '#{address}'")
-          return if @opts[:mock]
+          next if @opts[:mock]
           Net::SSH.start(address, user) do |ssh|
             existing_apps = ssh_exec(ssh, "dokku apps", user: user).to_s.lines.map(&:chomp)
             if existing_apps.include?(name)
@@ -42,6 +42,9 @@ module Provisioning
               Console.debug(ssh_exec(ssh, "dokku apps:create #{name}", user: user))
 
               fetch("services", [], config: config).each do |service|
+                if @servers.count > 1
+                  Console.warning("Service '#{service}' for dokku wont work in a cluster configuration")
+                end
                 # TODO: check if service exists
                 [
                   "dokku plugin:install https://github.com/dokku/dokku-#{service}.git #{service}",

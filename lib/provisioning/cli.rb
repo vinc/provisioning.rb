@@ -26,7 +26,7 @@ module Provisioning
       set_instance_variable_from_manifest(%w[compute provider])
       set_instance_variable_from_manifest(%w[dns provider])
 
-      @server_address = nil
+      @servers = []
 
       key_path = File.join(@env["HOME"], ".ssh/id_rsa.pub")
       key_body = @env["SSH_PUBLIC_KEY"] || File.open(key_path).read
@@ -56,36 +56,47 @@ module Provisioning
 
       compute.upload_ssh_key(@ssh_key)
 
-      i = 1
-      server = compute.find_or_create_server(
-        name: "#{@platform_provider}#{i}.#{@platform_domain}",
-        ssh_key: @ssh_key
-      )
-      server.wait_for { ready? }
+      @servers = (@manifest["compute"]["count"] || 1).times.map do |i|
+        compute.find_or_create_server(
+          name: "#{@platform_provider}#{i + 1}.#{@platform_domain}",
+          ssh_key: @ssh_key
+        )
+      end
+
+      @servers.each do |server|
+        server.wait_for { ready? }
+      end
       sleep 5
-      @server_address = server.public_ip_address
     end
 
     def provision_dns
       dns = provider("dns")
 
-      dns.create_zone(@platform_domain, @server_address)
+      cluster = @servers.map(&:public_ip_address)
+
+      if @dns_provider == "digitalocean"
+        dns.create_zone(@platform_domain, cluster.shift)
+      else
+        dns.create_zone(@platform_domain)
+      end
       Console.success("Configue '#{@platform_domain}' with the following DNS servers:")
       dns.get_name_servers(@platform_domain).each do |hostname|
         Console.success("  - #{hostname}")
       end
 
-      dns.create_record(@platform_domain,
-        type: "A",
-        name: [@platform_domain, ""].join("."),
-        data: @server_address
-      )
+      if cluster.count > 0
+        dns.create_record(@platform_domain,
+          type: "A",
+          name: [@platform_domain, ""].join("."),
+          value: cluster
+        )
+      end
 
       # Wilcard subdomains
       dns.create_record(@platform_domain,
         type: "CNAME",
         name: ["*", @platform_domain, ""].join("."),
-        data: [@platform_domain, ""].join(".")
+        value: [@platform_domain, ""].join(".")
       )
 
       @manifest["app"]["domains"].each do |app_domain|
@@ -96,10 +107,13 @@ module Provisioning
     def provision_platform
       platform = provider("platform")
 
-      platform.setup(
-        address: @server_address,
-        user: @compute_provider == "aws" ? "ubuntu" : "root"
-      )
+      @servers.each do |server|
+        platform.setup(
+          address: server.public_ip_address,
+          user: @compute_provider == "aws" ? "ubuntu" : "root"
+        )
+      end
+
       platform.create_app(@manifest["app"])
 
       # TODO: add `platform.get_post_install_instructions`

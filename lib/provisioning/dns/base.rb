@@ -9,7 +9,7 @@ module Provisioning
         raise NotImplementedError
       end
 
-      def create_zone(domain, address)
+      def create_zone(domain)
         raise NotImplementedError
       end
 
