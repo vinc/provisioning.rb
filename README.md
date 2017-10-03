@@ -25,33 +25,31 @@ Alternatively you can build the gem from its repository:
 Usage
 -----
 
-Run the provisioning script:
+Provision a manifest file:
 
-    $ provision manifest.json
+    $ provision manifest.sample.json
+    Reading provisioning manifest file 'manifest.sample.json'
+    ==> Provisioning digitalocean compute
     Uploading SSH key to DigitalOcean
-
-    Creating server 'dokku.server.net'
-
-    Creating domain 'server.net'
-    Configue 'server.net' with the following DNS servers:
-      - ns1.digitalocean.com
-      - ns2.digitalocean.com
-      - ns3.digitalocean.com
-
-    Creating domain record A 'dokku.server.net' to '192.168.13.37'
-    Creating domain record CNAME 'example.server.net' to 'dokku.server.net.'
-    Configue 'example.com' to point to 'dokku.server.net'
-    Configue 'www.example.com' to point to 'dokku.server.net'
-
-    Installing dokku v0.10.4 on '192.168.13.37'
-    Run `gem install dokku-cli` to get dokku client on your machine
-
-    Creating dokku app 'example' on '192.168.13.37'
-
+    Creating server 'dokku1.sfo1.example.net'
+    ==> Provisioning digitalocean dns
+    Creating zone 'sfo1.example.net'
+    Creating domain record A '@' to '104.131.186.241'
+    Configue 'sfo1.example.net' with the following DNS servers:
+      - ns1.example.net
+      - ns2.example.net
+    Creating domain record CNAME '*' to 'sfo1.example.net.'
+    Configue 'example.com' to point to 'sfo1.example.net'
+    Configue 'www.example.com' to point to 'sfo1.example.net'
+    ==> Provisioning dokku platform
+    Installing dokku v0.10.4 on '104.131.186.241'
+    Creating dokku app 'example' on '104.131.186.241'
+    Run `gem install dokku-cli` to get dokku client on your computer
     Adding dokku to git remotes
+    Uploading SSH key to DigitalOcean
     Run `git push dokku master` to deploy your code
 
-Provisioning manifest json file:
+Sample manifest file (in JSON format)
 
 ```json
 {
@@ -63,8 +61,8 @@ Provisioning manifest json file:
     },
     "platform": {
       "provider": "dokku",
-      "domain": "sfo1.example.net",
-      "version": "v0.10.4"
+      "version": "v0.10.4",
+      "domain": "sfo1.example.net"
     },
     "compute": {
       "provider": "digitalocean",
