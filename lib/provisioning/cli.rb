@@ -63,6 +63,7 @@ module Provisioning
         ssh_key: @ssh_key
       )
       server.wait_for { ready? }
+      sleep 5
       @server_address = server.public_ip_address
     end
 
