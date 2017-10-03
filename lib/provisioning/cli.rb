@@ -27,7 +27,6 @@ module Provisioning
       set_instance_variable_from_manifest(%w[dns provider])
 
       @server_address = nil
-      @server_hostname = [@platform_provider, @platform_domain].join(".")
 
       key_path = File.join(@env["HOME"], ".ssh/id_rsa.pub")
       key_body = @env["SSH_PUBLIC_KEY"] || File.open(key_path).read
@@ -58,8 +57,9 @@ module Provisioning
 
       compute.upload_ssh_key(@ssh_key)
 
+      i = 1
       server = compute.find_or_create_server(
-        name: @server_hostname,
+        name: "#{@platform_provider}#{i}.#{@platform_domain}",
         ssh_key: @ssh_key
       )
       server.wait_for { ready? }
@@ -83,20 +83,15 @@ module Provisioning
         data: @server_address
       )
 
-      dns.create_record(@platform_domain,
-        type: "A",
-        name: [@platform_provider, @platform_domain, ""].join("."),
-        data: @server_address
-      )
-
+      # Wilcard subdomains
       dns.create_record(@platform_domain,
         type: "CNAME",
-        name: [@app_name, @platform_domain, ""].join("."),
-        data: [@server_hostname, ""].join(".")
+        name: ["*", @platform_domain, ""].join("."),
+        data: [@platform_domain, ""].join(".")
       )
 
       @manifest["app"]["domains"].each do |app_domain|
-        Console.success("Configue '#{app_domain}' to point to '#{@server_hostname}'")
+        Console.success("Configue '#{app_domain}' to point to '#{@platform_domain}'")
       end
     end
 
@@ -111,6 +106,7 @@ module Provisioning
       )
       platform.create_app(@manifest["app"])
 
+      # TODO: add `platform.get_post_install_instructions`
       case @platform_provider
       when "dokku"
         Console.success("Run `gem install dokku-cli` to get dokku client on your computer")
@@ -130,11 +126,14 @@ module Provisioning
         else
           case @platform_provider
           when "dokku"
-            url = "#{@platform_provider}@#{@server_hostname}:#{@app_name}"
+            url = "#{@platform_provider}@#{@platform_domain}:#{@app_name}"
+            git.add_remote(@platform_provider, url)
+          when "flynn"
+            url = "https://git.#{@platform_domain}/#{@app_name}.git"
             git.add_remote(@platform_provider, url)
           end
         end
-        Console.success("Run `git push dokku master` to deploy your code")
+        Console.success("Run `git push #{@platform_provider} master` to deploy your code")
       end
     end
 

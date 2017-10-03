@@ -6,6 +6,7 @@ require "provisioning/console"
 require "provisioning/dns/aws"
 require "provisioning/dns/digitalocean"
 require "provisioning/platform/dokku"
+require "provisioning/platform/flynn"
 require "provisioning/public_key"
 require "provisioning/version"
 
