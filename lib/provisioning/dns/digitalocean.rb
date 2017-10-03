@@ -3,7 +3,7 @@ require "droplet_kit"
 require "provisioning"
 
 module Provisioning
-  module DNS
+  module Dns
     class Digitalocean < Base
       def initialize(config, opts, env)
         @config = config

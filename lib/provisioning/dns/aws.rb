@@ -3,7 +3,7 @@ require "fog/aws"
 require "provisioning"
 
 module Provisioning
-  module DNS
+  module Dns
     class Aws < Base
       def initialize(config, opts, env)
         @config = config

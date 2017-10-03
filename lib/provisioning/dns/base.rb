@@ -1,7 +1,7 @@
 require "provisioning"
 
 module Provisioning
-  module DNS
+  module Dns
     class Base
       include Provisioning::Core
 

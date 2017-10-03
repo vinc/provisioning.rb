@@ -52,8 +52,7 @@ module Provisioning
     end
 
     def provision_compute
-      klass = Compute.const_get(@compute_provider.capitalize)
-      compute = klass.new(@manifest["compute"], @opts, @env)
+      compute = provider("compute")
 
       compute.upload_ssh_key(@ssh_key)
 
@@ -68,8 +67,7 @@ module Provisioning
     end
 
     def provision_dns
-      klass = DNS.const_get(@dns_provider.capitalize)
-      dns = klass.new(@manifest["dns"], @opts, @env)
+      dns = provider("dns")
 
       dns.create_zone(@platform_domain, @server_address)
       Console.success("Configue '#{@platform_domain}' with the following DNS servers:")
@@ -96,8 +94,7 @@ module Provisioning
     end
 
     def provision_platform
-      klass = Platform.const_get(@platform_provider.capitalize)
-      platform = klass.new(@manifest["platform"], @opts, @env)
+      platform = provider("platform")
 
       platform.setup(
         address: @server_address,
@@ -140,18 +137,15 @@ module Provisioning
       Console.info("Reading provisioning manifest file '#{filename}'")
       begin
         json = JSON.parse(File.open(filename).read)
-      rescue Errno::ENOENT, JSON::ParserError
+      rescue Errno::ENOENT
         Console.error("Could not read provisioning manifest file '#{filename}'")
+      rescue JSON::ParserError
+        Console.error("Could not parse provisioning manifest file '#{filename}'")
       end
       json["manifest"]
     end
 
     private
-
-    def set_instance_variable_from_manifest(keys)
-      name = "@" + keys.join("_")
-      instance_variable_set(name, dig_manifest(keys))
-    end
 
     def dig_manifest(keys)
       path = []
@@ -161,6 +155,23 @@ module Provisioning
         hash = hash[key] || Console.error("Could not find #{path.join(".")} in manifest")
       end
       hash
+    end
+
+    def set_instance_variable_from_manifest(keys)
+      name = "@" + keys.join("_")
+      instance_variable_set(name, dig_manifest(keys))
+    end
+
+    def provider(type)
+      provider = instance_variable_get("@#{type}_provider")
+
+      Console.info("==> Provisioning #{provider} #{type}")
+
+      klass = Provisioning.
+        const_get(type.capitalize).
+        const_get(provider.capitalize)
+
+      klass.new(@manifest[type], @opts, @env)
     end
   end
 end
