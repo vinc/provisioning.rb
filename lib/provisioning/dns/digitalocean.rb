@@ -4,12 +4,12 @@ require "provisioning"
 
 module Provisioning
   module DNS
-    class Digitalocean
+    class Digitalocean < Base
       def initialize(config, opts, env)
         @config = config
         @opts = opts
         @client = DropletKit::Client.new(
-          access_token: env["DIGITALOCEAN_TOKEN"]
+          access_token: fetch("DIGITALOCEAN_TOKEN", env: env)
         ) unless @opts[:mock]
       end
 

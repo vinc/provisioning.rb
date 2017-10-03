@@ -4,16 +4,10 @@ require "provisioning"
 
 module Provisioning
   module Platform
-    class Dokku
-      def initialize(config, opts, env)
-        @opts = opts
-        @config = config
-        @servers = []
-      end
-
-      def setup(address:, domain:, user: "root")
+    class Dokku < Base
+      def setup(address:, user: "root")
         @servers << [address, user]
-        version = @config["version"]
+        version = fetch("version", config: @config)
         Console.info("Installing dokku #{version} on '#{address}'")
         return if @opts[:mock]
         Net::SSH.start(address, user) do |ssh|
@@ -21,6 +15,7 @@ module Provisioning
             Console.warning("Dokku already installed, skipping")
           else
             # TODO: configure hostname
+            domain = fetch("domain", config: @config)
             [
               "wget https://raw.githubusercontent.com/dokku/dokku/#{version}/bootstrap.sh",
               "DOKKU_TAG=#{version} bash bootstrap.sh",
@@ -35,7 +30,7 @@ module Provisioning
       end
 
       def create_app(config)
-        name = config["name"]
+        name = fetch("name", config: config)
         @servers.each do |address, user|
           Console.info("Creating dokku app '#{name}' on '#{address}'")
           return if @opts[:mock]
@@ -46,7 +41,7 @@ module Provisioning
             else
               Console.debug(ssh_exec(ssh, "dokku apps:create #{name}", user: user))
 
-              config["services"].each do |service|
+              fetch("services", [], config: config).each do |service|
                 # TODO: check if service exists
                 [
                   "dokku plugin:install https://github.com/dokku/dokku-#{service}.git #{service}",
@@ -55,18 +50,12 @@ module Provisioning
                 ].each { |cmd| Console.debug(ssh_exec(ssh, cmd, user: user)) }
               end
 
-              domains = config["domains"].join(" ")
-              Console.debug(ssh_exec(ssh, "dokku domains:add #{name} #{domains}", user: user))
+              fetch("domains", [], config: config).each do |domain|
+                Console.debug(ssh_exec(ssh, "dokku domains:add #{name} #{domain}", user: user))
+              end
             end
           end
         end
-      end
-
-      private
-
-      def ssh_exec(ssh, cmd, user: "root")
-        cmd = "sudo bash -c '#{cmd}'" if user != "root"
-        ssh.exec!(cmd)
       end
     end
   end

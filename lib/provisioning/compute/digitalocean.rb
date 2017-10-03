@@ -4,16 +4,14 @@ require "provisioning"
 
 module Provisioning
   module Compute
-    class Digitalocean
-      KEY_NAME = "provisioning key".freeze
-
+    class Digitalocean < Base
       def initialize(config, opts, env)
         @config = config
         @opts = opts
         Fog.mock! if @opts[:mock]
         @client = Fog::Compute.new(
           provider: :digitalocean,
-          digitalocean_token: env["DIGITALOCEAN_TOKEN"]
+          digitalocean_token: fetch("DIGITALOCEAN_TOKEN", env: env)
         )
       end
 
@@ -41,9 +39,9 @@ module Provisioning
 
         @client.servers.create(
           name: name,
-          region: @config["region"],
-          image: @config["image"],
-          size: @config["size"],
+          region: fetch("region", config: @config),
+          image: fetch("image", config: @config),
+          size: fetch("size", config: @config),
           ssh_keys: [ssh_key.fingerprint]
         )
       end

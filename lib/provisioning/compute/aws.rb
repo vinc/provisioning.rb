@@ -4,18 +4,16 @@ require "provisioning"
 
 module Provisioning
   module Compute
-    class Aws
-      KEY_NAME = "provisioning key".freeze
-
+    class Aws < Base
       def initialize(config, opts, env)
         @config = config
         @opts = opts
         Fog.mock! if @opts[:mock]
         @client = Fog::Compute.new(
           provider: "aws",
-          region: @config["region"],
-          aws_access_key_id: env["AWS_ACCESS_KEY_ID"],
-          aws_secret_access_key: env["AWS_SECRET_ACCESS_KEY"]
+          region: fetch("region", config: @config),
+          aws_access_key_id: fetch("AWS_ACCESS_KEY_ID", env: env),
+          aws_secret_access_key: fetch("AWS_SECRET_ACCESS_KEY", env: env)
         )
       end
 
@@ -40,8 +38,8 @@ module Provisioning
 
         # TODO: set instance name instead of tagging it
         @client.servers.create(
-          image_id: @config["image_id"],
-          flavor_id: @config["flavor_id"],
+          image_id: fetch("image_id", config: @config),
+          flavor_id: fetch("flavor_id", config: @config),
           tags: { name: name },
           key_name: KEY_NAME
         )

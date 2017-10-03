@@ -4,15 +4,15 @@ require "provisioning"
 
 module Provisioning
   module DNS
-    class Aws
+    class Aws < Base
       def initialize(config, opts, env)
         @config = config
         @opts = opts
         Fog.mock! if @opts[:mock]
         @client = Fog::DNS.new(
           provider: "aws",
-          aws_access_key_id: env["AWS_ACCESS_KEY_ID"],
-          aws_secret_access_key: env["AWS_SECRET_ACCESS_KEY"]
+          aws_access_key_id: fetch("AWS_ACCESS_KEY_ID", env: env),
+          aws_secret_access_key: fetch("AWS_SECRET_ACCESS_KEY", env: env)
         )
       end
 

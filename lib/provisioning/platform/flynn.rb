@@ -4,14 +4,8 @@ require "provisioning"
 
 module Provisioning
   module Platform
-    class Flynn
-      def initialize(config, opts, env)
-        @opts = opts
-        @config = config
-        @servers = []
-      end
-
-      def setup(address:, domain:, user: "root")
+    class Flynn < Base
+      def setup(address:, user: "root")
         @servers << [address, user]
         Console.info("Installing flynn on '#{address}'")
         return if @opts[:mock]
@@ -19,6 +13,7 @@ module Provisioning
           if ssh_exec(ssh, "which flynn", user: user).present?
             Console.warning("Flynn already installed, skipping")
           else
+            domain = fetch("domain", config: @config)
             [
               "bash < <(curl -fsSL https://dl.flynn.io/install-flynn)",
               "systemctl start flynn-host",
@@ -29,7 +24,7 @@ module Provisioning
       end
 
       def create_app(config)
-        name = config["name"]
+        name = fetch("name", config: config)
         @servers.each do |address, user|
           Console.info("Creating flynn app '#{name}' on '#{address}'")
           return if @opts[:mock]
@@ -49,11 +44,11 @@ module Provisioning
 
               cmds << "flynn create #{name}"
 
-              config["services"].each do |service|
+              fetch("services", [], config: config).each do |service|
                 cmds << "flynn -a #{name} resource add #{service}"
               end
 
-              config["domains"].each do |domain|
+              fetch("domains", [], config: config).each do |domain|
                 cmds << "flynn -a #{name} route add http #{domain}"
               end
 
@@ -61,13 +56,6 @@ module Provisioning
             end
           end
         end
-      end
-
-      private
-
-      def ssh_exec(ssh, cmd, user: "root")
-        cmd = "sudo bash -c '#{cmd}'" if user != "root"
-        ssh.exec!(cmd)
       end
     end
   end

@@ -101,7 +101,6 @@ module Provisioning
 
       platform.setup(
         address: @server_address,
-        domain: @platform_domain,
         user: @compute_provider == "aws" ? "ubuntu" : "root"
       )
       platform.create_app(@manifest["app"])
