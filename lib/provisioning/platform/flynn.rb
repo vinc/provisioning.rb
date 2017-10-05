@@ -13,16 +13,18 @@ module Provisioning
           if ssh_exec(ssh, "which flynn", user: user).present?
             Console.warning("Flynn already installed, skipping")
           else
-            [
-              "bash < <(curl -fsSL https://dl.flynn.io/install-flynn)",
-              "systemctl start flynn-host",
-            ].each { |cmd| Console.debug(ssh_exec(ssh, cmd, user: user)) }
+            # Install flynn
+            ssh_exec(ssh, "bash < <(curl -fsSL https://dl.flynn.io/install-flynn)", user: user)
 
+            # Init cluster
             if @servers.count == 1
               @token = ssh_exec(ssh, "flynn-host init --init-discovery", user: user)
             else
               ssh_exec(ssh, "flynn-host init --discovery #{@token}", user: user)
             end
+
+            # Start flynn
+            ssh_exec(ssh, "systemctl start flynn-host", user: user)
           end
         end
       end
