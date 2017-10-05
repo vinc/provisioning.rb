@@ -22,8 +22,8 @@ module Provisioning
               "service dokku-installer stop",
               "systemctl disable dokku-installer",
               "cat .ssh/authorized_keys | sshcommand acl-add dokku admin",
-              "echo -n #{domain} > /home/dokku/VHOST",
-              "echo -n #{domain} > /home/dokku/HOSTNAME"
+              "echo #{domain} > /home/dokku/VHOST",
+              "echo #{domain} > /home/dokku/HOSTNAME"
             ].each { |cmd| Console.debug(ssh_exec(ssh, cmd, user: user)) }
           end
         end
