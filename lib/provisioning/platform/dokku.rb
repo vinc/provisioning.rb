@@ -54,6 +54,8 @@ module Provisioning
               end
 
               fetch("domains", [], config: config).each do |domain|
+                # This will replace default subdomain 'foo.example.com' in /dokku/foo/VHOST
+                # because the app has not been deployed once yet.
                 Console.debug(ssh_exec(ssh, "dokku domains:add #{name} #{domain}", user: user))
               end
             end
