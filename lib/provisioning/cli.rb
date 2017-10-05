@@ -94,6 +94,14 @@ module Provisioning
         )
       end
 
+      @servers.each_with_index do |server, i|
+        dns.create_record(@platform_domain,
+          type: "A",
+          name: "#{@platform_provider}#{i + 1}.#{@platform_domain}",
+          value: server.public_ip_address
+        )
+      end
+
       # Wilcard subdomains
       dns.create_record(@platform_domain,
         type: "CNAME",
