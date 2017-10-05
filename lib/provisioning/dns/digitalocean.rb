@@ -40,6 +40,7 @@ module Provisioning
 
         records = @client.domain_records.all(for_domain: domain)
         value.each do |data|
+          data = data.gsub("#{domain}.", "@")
           if records.any? { |r| r.name == name && r.data == data }
             Console.warning("Record already exists, skipping")
           else
