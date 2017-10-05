@@ -28,11 +28,12 @@ module Provisioning
       end
 
       def create_record(domain, type:, name:, value:)
-        value_to_s = value.is_a?(Array) ? value.join(", ") : value
+        value = value.is_a?(Array) ? value : [value]
+        value_to_s = value.join(", ")
         Console.info("Creating domain record #{type} '#{name}' to '#{value_to_s}'")
 
         zone = get_zone(domain)
-        if zone.records.get(name, type) == value
+        if zone.records.get(name, type).try(:value) == value
           Console.warning("Record already exists, skipping")
         else
           zone.records.create(type: type, name: name, value: value)
