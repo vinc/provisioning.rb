@@ -21,4 +21,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency("net-ssh",          "~> 4.1", ">= 4.1.0")
   s.add_runtime_dependency("rainbow",          "~> 2.2", ">= 2.2.0")
   s.add_runtime_dependency("trollop",          "~> 2.1", ">= 2.1.0")
+  s.add_development_dependency("rspec",        "~> 3.6", ">= 3.6.0")
 end

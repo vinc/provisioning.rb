@@ -49,6 +49,7 @@ module Provisioning
       provision_dns
       provision_platform
       add_git_remote
+      # TODO: return false when an error occur
     end
 
     def provision_compute
