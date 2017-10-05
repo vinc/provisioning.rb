@@ -56,7 +56,8 @@ module Provisioning
 
       compute.upload_ssh_key(@ssh_key)
 
-      @servers = (@manifest["compute"]["count"] || 1).times.map do |i|
+      n = (@manifest["compute"]["count"] || 1).to_i
+      @servers = n.times.map do |i|
         compute.find_or_create_server(
           name: "#{@platform_provider}#{i + 1}.#{@platform_domain}",
           ssh_key: @ssh_key
