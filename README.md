@@ -16,7 +16,7 @@ Installation
 
 Alternatively you can build the gem from its repository:
 
-    $ git clone git://github.com/vinc/provisioning.git
+    $ git clone git://github.com/vinc/provisioning.rb.git
     $ cd provisioning
     $ gem build provisioning.gemspec
     $ gem install provisioning-0.0.1.gem
